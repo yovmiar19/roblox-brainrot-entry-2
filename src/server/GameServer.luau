@@ -222,10 +222,58 @@ function GameServer.buildWorld()
 		local leaves = GameServer.makePart("TreeLeaves" .. tostring(i), Vector3.new(9, 9, 9), Vector3.new(tx, 12, tz), Color3.fromRGB(40, 160, 60), Enum.Material.SmoothPlastic)
 		leaves.Shape = Enum.PartType.Ball
 	end
-	-- Two tall yellow beacon pillars (never collide; one offset so the
-	-- player never spawns inside it).
-	GameServer.makePart("BeaconSpawn", Vector3.new(2, 30, 2), Vector3.new(4, 15, -6), Color3.fromRGB(255, 220, 0), Enum.Material.Neon, false)
-	GameServer.makePart("BeaconLane", Vector3.new(2, 30, 2), Vector3.new(0, 15, GameServer.LANE_Z), Color3.fromRGB(255, 220, 0), Enum.Material.Neon, false)
+	-- Decorative lamps line both sides of the lane (never in the middle
+	-- of it): warm glowing heads on slim poles. The two rows are
+	-- staggered so no lamp stands in the player's path from the spawn.
+	for i, lx in ipairs({ -60, -40, -20, 0, 20, 40, 60 }) do
+		GameServer.makePart("LampPoleN" .. tostring(i), Vector3.new(1, 6, 1), Vector3.new(lx, 5, -28), Color3.fromRGB(60, 60, 75), Enum.Material.SmoothPlastic, false)
+		local headN = GameServer.makePart("LampHeadN" .. tostring(i), Vector3.new(2.5, 2.5, 2.5), Vector3.new(lx, 9, -28), Color3.fromRGB(255, 200, 90), Enum.Material.Neon, false)
+		headN.Shape = Enum.PartType.Ball
+	end
+	for i, lx in ipairs({ -50, -30, -10, 10, 30, 50 }) do
+		GameServer.makePart("LampPoleS" .. tostring(i), Vector3.new(1, 6, 1), Vector3.new(lx, 5, -12), Color3.fromRGB(60, 60, 75), Enum.Material.SmoothPlastic, false)
+		local headS = GameServer.makePart("LampHeadS" .. tostring(i), Vector3.new(2.5, 2.5, 2.5), Vector3.new(lx, 9, -12), Color3.fromRGB(255, 200, 90), Enum.Material.Neon, false)
+		headS.Shape = Enum.PartType.Ball
+	end
+	-- Bushes alternate with the lamps along both rows, so the lane is
+	-- flanked by green instead of bare grass.
+	for i, bx in ipairs({ -50, -30, -10, 10, 30, 50 }) do
+		local bushN = GameServer.makePart("BushN" .. tostring(i), Vector3.new(4, 4, 4), Vector3.new(bx, 4, -28), Color3.fromRGB(40, 180, 70), Enum.Material.SmoothPlastic, false)
+		bushN.Shape = Enum.PartType.Ball
+	end
+	for i, bx in ipairs({ -60, -40, -20, 20, 40, 60 }) do
+		local bushS = GameServer.makePart("BushS" .. tostring(i), Vector3.new(4, 4, 4), Vector3.new(bx, 4, -12), Color3.fromRGB(40, 180, 70), Enum.Material.SmoothPlastic, false)
+		bushS.Shape = Enum.PartType.Ball
+	end
+	-- A decorative arch over the lane start (x = -70, where walkers
+	-- spawn): two side posts and a top beam high enough that even the
+	-- tallest walker (top ~10.5) passes under it.
+	GameServer.makePart("ArchPostNorth", Vector3.new(2, 10, 2), Vector3.new(-70, 7, -27), Color3.fromRGB(120, 90, 200), Enum.Material.SmoothPlastic, false)
+	GameServer.makePart("ArchPostSouth", Vector3.new(2, 10, 2), Vector3.new(-70, 7, -13), Color3.fromRGB(120, 90, 200), Enum.Material.SmoothPlastic, false)
+	local finN = GameServer.makePart("ArchFinialNorth", Vector3.new(3, 3, 3), Vector3.new(-70, 13.5, -27), Color3.fromRGB(255, 215, 0), Enum.Material.Neon, false)
+	finN.Shape = Enum.PartType.Ball
+	local finS = GameServer.makePart("ArchFinialSouth", Vector3.new(3, 3, 3), Vector3.new(-70, 13.5, -13), Color3.fromRGB(255, 215, 0), Enum.Material.Neon, false)
+	finS.Shape = Enum.PartType.Ball
+	GameServer.makePart("ArchBeam", Vector3.new(2, 2, 16), Vector3.new(-70, 13, GameServer.LANE_Z), Color3.fromRGB(255, 220, 0), Enum.Material.Neon, false)
+	-- Benches on the south plaza, clear of the spawn path (never x = 0).
+	for i, bx in ipairs({ -40, -20, 20, 40 }) do
+		GameServer.makePart("BenchSeat" .. tostring(i), Vector3.new(6, 1, 2), Vector3.new(bx, 2.5, 2), Color3.fromRGB(150, 100, 60), Enum.Material.Wood, false)
+		GameServer.makePart("BenchBack" .. tostring(i), Vector3.new(6, 2, 1), Vector3.new(bx, 4, 2.5), Color3.fromRGB(150, 100, 60), Enum.Material.Wood, false)
+	end
+	-- Flower beds on the north plaza, in front of the sign.
+	local flowerColors = { Color3.fromRGB(255, 120, 200), Color3.fromRGB(255, 220, 0), Color3.fromRGB(255, 255, 255) }
+	for i, fx in ipairs({ -50, 0, 50 }) do
+		GameServer.makePart("FlowerBed" .. tostring(i), Vector3.new(8, 1, 4), Vector3.new(fx, 2.5, -40), Color3.fromRGB(110, 70, 40), Enum.Material.SmoothPlastic, false)
+		for j = 1, 3 do
+			local flower = GameServer.makePart("Flower" .. tostring((i - 1) * 3 + j), Vector3.new(1.5, 1.5, 1.5), Vector3.new(fx - 2 + (j - 1) * 2, 3.5, -40), flowerColors[j], Enum.Material.Neon, false)
+			flower.Shape = Enum.PartType.Ball
+		end
+	end
+	-- A dashed white centre line on the lane surface (flat, so walkers
+	-- glide over it; it marks the lane, it never blocks it).
+	for i, mx in ipairs({ -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60 }) do
+		GameServer.makePart("LaneMark" .. tostring(i), Vector3.new(4, 0.1, 1), Vector3.new(mx, 3.05, GameServer.LANE_Z), Color3.fromRGB(240, 240, 240), Enum.Material.SmoothPlastic, false)
+	end
 	-- The big sign at the back, with a live status line on its face.
 	local sign = GameServer.makePart("BoulevardSign", Vector3.new(48, 10, 2), Vector3.new(0, 14, -52), Color3.fromRGB(40, 40, 90), Enum.Material.SmoothPlastic)
 	local surface = Instance.new("SurfaceGui")
@@ -252,7 +300,7 @@ function GameServer.buildWorld()
 	status.Font = Enum.Font.SourceSans
 	status.Parent = surface
 	GameServer.signLabel = status
-	print("Brainrot Boulevard: world built (plaza, lane, 4 bases, 10 trees, sign, beacons)")
+	print("Brainrot Boulevard: world built (plaza, lane, 4 bases, 10 trees, sign, lamps, bushes, arch, benches, flower beds, lane markings)")
 end
 
 -- A scale-sized name tag on an Attachment above a body. The tag shrinks
