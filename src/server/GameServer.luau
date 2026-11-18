@@ -23,6 +23,7 @@
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local BrainrotData = require(script.Parent.BrainrotData)
 
@@ -76,6 +77,27 @@ GameServer.walkers = {}
 GameServer.players = {}
 GameServer.baseOwners = {}
 GameServer.signLabel = nil
+
+-- Body size grows with rarity, so rarer brainrots read bigger at a glance.
+-- Common 4, Rare 4.5, Epic 5, Legendary 5.5, Mythic 6 studs.
+GameServer.BODY_SIZE = {
+	Common = 4,
+	Rare = 4.5,
+	Epic = 5,
+	Legendary = 5.5,
+	Mythic = 6,
+}
+
+function GameServer.bodySizeFor(def)
+	return GameServer.BODY_SIZE[def.rarity] or 4
+end
+
+-- The centre Y of a body whose bottom rests on a surface whose top is y=3
+-- (the lane top and the base top are both y=3), so a bigger body never
+-- sinks into the lane or the base.
+function GameServer.bodyRestY(size)
+	return 3 + size / 2
+end
 
 -- Pure helpers (also used by the mock test through GameServer._test).
 
@@ -234,11 +256,12 @@ function GameServer.buildWorld()
 end
 
 -- A scale-sized name tag on an Attachment above a body. The tag shrinks
--- with distance, so it gives real distance feedback.
+-- with distance, so it gives real distance feedback. The Attachment floats
+-- 1.5 studs above the top of the body, whatever the body's size.
 function GameServer.makeTag(parent, attachPart, text, rarity)
 	local attach = Instance.new("Attachment")
 	attach.Name = "NameTagAnchor"
-	attach.Position = Vector3.new(0, 3.5, 0)
+	attach.Position = Vector3.new(0, attachPart.Size.Y / 2 + 1.5, 0)
 	attach.Parent = attachPart
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "NameTag"
@@ -270,13 +293,17 @@ end
 function GameServer.makeBody(def, golden, pos)
 	local model = Instance.new("Model")
 	model.Name = def.name
+	-- Bigger body for rarer brainrots; the bottom rests on the y=3 surface
+	-- (lane top / base top), so the centre Y follows the size.
+	local size = GameServer.bodySizeFor(def)
+	local restY = GameServer.bodyRestY(size)
 	local body = Instance.new("Part")
 	body.Name = "Body"
-	body.Size = Vector3.new(4, 4, 4)
-	body.Position = pos
-	-- Anchored: the server moves walkers by setting Position every 0.1s.
-	-- An unanchored part falls under gravity between updates and snaps
-	-- back up, which shows as a visible flicker on the lane.
+	body.Size = Vector3.new(size, size, size)
+	body.Position = Vector3.new(pos.X, restY, pos.Z)
+	-- Anchored: the server moves walkers by setting Position every frame
+	-- (Heartbeat). An unanchored part falls under gravity between updates
+	-- and snaps back up, which shows as a visible flicker on the lane.
 	body.Anchored = true
 	body.CanCollide = false
 	if def.shape == "Ball" then
@@ -291,10 +318,12 @@ function GameServer.makeBody(def, golden, pos)
 	end
 	body.Parent = model
 	-- A big transparent hitbox, so E always has something to grab.
+	-- 7x7x7 covers even the 6-stud Mythic body (it spans restY +/- 3,
+	-- the hitbox restY +/- 3.5).
 	local hitbox = Instance.new("Part")
 	hitbox.Name = "Hitbox"
 	hitbox.Size = Vector3.new(7, 7, 7)
-	hitbox.Position = pos
+	hitbox.Position = Vector3.new(pos.X, restY, pos.Z)
 	hitbox.Anchored = true
 	hitbox.CanCollide = false
 	hitbox.Transparency = 1
@@ -340,6 +369,7 @@ function GameServer.spawnWalker(forceGolden)
 		rate = rate,
 		price = price,
 		x = x,
+		bodySize = GameServer.bodySizeFor(def),
 	}
 	table.insert(GameServer.walkers, walker)
 	prompt.Triggered:Connect(function(player)
@@ -721,8 +751,11 @@ function GameServer.stepWalkers(dt)
 		if walker.x >= GameServer.LANE_X_MAX then
 			GameServer.removeWalker(walker)
 		else
-			walker.body.Position = Vector3.new(walker.x, 5, GameServer.LANE_Z)
-			walker.hitbox.Position = Vector3.new(walker.x, 5, GameServer.LANE_Z)
+			-- The centre Y follows the body size, so the bottom stays
+			-- on the lane top (y=3) instead of sinking into it.
+			local y = GameServer.bodyRestY(walker.bodySize)
+			walker.body.Position = Vector3.new(walker.x, y, GameServer.LANE_Z)
+			walker.hitbox.Position = Vector3.new(walker.x, y, GameServer.LANE_Z)
 		end
 	end
 end
@@ -904,12 +937,25 @@ function GameServer.start()
 	for _, player in ipairs(Players:GetPlayers()) do
 		GameServer.onPlayerAdded(player)
 	end
-	task.spawn(function()
-		while true do
-			task.wait(0.1)
-			GameServer.tick(0.1)
-		end
-	end)
+	-- The simulation advances through tick(dt) on RunService.Heartbeat,
+	-- once per frame, so walkers glide instead of jumping 10 times a
+	-- second (the old task.wait(0.1) loop moved them in visible steps).
+	-- tick() is fully dt-based, so the timers, spawns and income behave
+	-- exactly as before — only the update rate changes.
+	-- Fallback: if Heartbeat is ever unavailable, drive tick() on a
+	-- 0.05s loop so the game still runs (smoother than the old 0.1s).
+	if RunService and RunService.Heartbeat then
+		RunService.Heartbeat:Connect(function(dt)
+			GameServer.tick(dt)
+		end)
+	else
+		task.spawn(function()
+			while true do
+				task.wait(0.05)
+				GameServer.tick(0.05)
+			end
+		end)
+	end
 	print("Brainrot Boulevard: live — walkers spawning, buy with E, rebirths, locks, raids and Golden Rush")
 end
 

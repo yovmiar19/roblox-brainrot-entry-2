@@ -16,13 +16,13 @@ BrainrotData.RARITY_COLORS = {
 
 BrainrotData.CAST = {
 	{ name = "Sir Waddlesworth", rarity = "Common", rate = 4, price = 40, shape = "Ball", color = Color3.fromRGB(255, 220, 90), blurb = "a duck in a top hat who waddles for coins" },
-	{ name = "Bloop the Blob", rarity = "Common", rate = 8, price = 80, shape = "Ball", color = Color3.fromRGB(110, 220, 110), blurb = "a jelly blob that hums elevator music" },
+	{ name = "Bloop the Blob", rarity = "Common", rate = 8, price = 80, shape = "Block", color = Color3.fromRGB(110, 220, 110), blurb = "a jelly blob that hums elevator music" },
 	{ name = "Captain Crumb", rarity = "Common", rate = 14, price = 140, shape = "Block", color = Color3.fromRGB(170, 120, 70), blurb = "a cookie pirate hunting for crumbs" },
 	{ name = "Professor Picklejar", rarity = "Rare", rate = 25, price = 250, shape = "Ball", color = Color3.fromRGB(90, 180, 90), blurb = "a pickle in a lab coat, very serious" },
-	{ name = "DJ Disco Duck", rarity = "Rare", rate = 45, price = 450, shape = "Ball", color = Color3.fromRGB(255, 120, 200), blurb = "a duck with headphones who drops beats" },
+	{ name = "DJ Disco Duck", rarity = "Rare", rate = 45, price = 450, shape = "Block", color = Color3.fromRGB(255, 120, 200), blurb = "a duck with headphones who drops beats" },
 	{ name = "Baron von Bounce", rarity = "Epic", rate = 80, price = 800, shape = "Ball", color = Color3.fromRGB(150, 90, 255), blurb = "a bouncing baron in a velvet cape" },
 	{ name = "Queen Quokka", rarity = "Epic", rate = 130, price = 1300, shape = "Block", color = Color3.fromRGB(255, 150, 60), blurb = "a quokka queen who smiles at gold" },
-	{ name = "Sir Reginald Rumble", rarity = "Legendary", rate = 250, price = 2500, shape = "Ball", color = Color3.fromRGB(230, 60, 60), blurb = "a rumbling knight of the boulevard" },
+	{ name = "Sir Reginald Rumble", rarity = "Legendary", rate = 250, price = 2500, shape = "Block", color = Color3.fromRGB(230, 60, 60), blurb = "a rumbling knight of the boulevard" },
 	{ name = "Madame Moonbeam", rarity = "Legendary", rate = 400, price = 4000, shape = "Ball", color = Color3.fromRGB(180, 220, 255), blurb = "a moonbeam in a ballgown" },
 	{ name = "The Golden Gherkin", rarity = "Mythic", rate = 500, price = 5000, shape = "Ball", color = Color3.fromRGB(255, 215, 0), blurb = "the one true gherkin, gilded" },
 	{ name = "Emperor Moonpie", rarity = "Mythic", rate = 900, price = 9000, shape = "Block", color = Color3.fromRGB(60, 60, 180), blurb = "emperor of the midnight snack" },
