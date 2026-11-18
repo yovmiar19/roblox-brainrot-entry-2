@@ -274,7 +274,10 @@ function GameServer.makeBody(def, golden, pos)
 	body.Name = "Body"
 	body.Size = Vector3.new(4, 4, 4)
 	body.Position = pos
-	body.Anchored = false
+	-- Anchored: the server moves walkers by setting Position every 0.1s.
+	-- An unanchored part falls under gravity between updates and snaps
+	-- back up, which shows as a visible flicker on the lane.
+	body.Anchored = true
 	body.CanCollide = false
 	if def.shape == "Ball" then
 		body.Shape = Enum.PartType.Ball
@@ -292,7 +295,7 @@ function GameServer.makeBody(def, golden, pos)
 	hitbox.Name = "Hitbox"
 	hitbox.Size = Vector3.new(7, 7, 7)
 	hitbox.Position = pos
-	hitbox.Anchored = false
+	hitbox.Anchored = true
 	hitbox.CanCollide = false
 	hitbox.Transparency = 1
 	hitbox.Parent = model
@@ -551,14 +554,16 @@ function GameServer.spawnSnatcher()
 	body.Shape = Enum.PartType.Ball
 	body.Color = Color3.fromRGB(200, 30, 30)
 	body.Material = Enum.Material.Neon
-	body.Anchored = false
+	-- Anchored: the Snatcher is moved by setting Position, same as walkers.
+	-- Unanchored it would fall under gravity between updates and flicker.
+	body.Anchored = true
 	body.CanCollide = false
 	body.Parent = model
 	local hitbox = Instance.new("Part")
 	hitbox.Name = "Hitbox"
 	hitbox.Size = Vector3.new(8, 8, 8)
 	hitbox.Position = pos
-	hitbox.Anchored = false
+	hitbox.Anchored = true
 	hitbox.CanCollide = false
 	hitbox.Transparency = 1
 	hitbox.Parent = model
