@@ -40,8 +40,8 @@ climb the ladder.
   unchanged.
 - `game.rbxl` is the place Rojo builds from `src/` and
   `default.project.json`; `screenshots/` holds captures of it; `PLAY.json`
-  names no place yet (the new experience has not been published — the
-  owner publishes it, then PLAY.json is filled and the entry is submitted).
+  names the published experience (place 99307951224037, universe
+  10777495422, now Public on Roblox).
 - One screenshot must also be the game's first thumbnail on Roblox: the
   same picture, uploaded on the Creator Dashboard with the game's icon.
 
